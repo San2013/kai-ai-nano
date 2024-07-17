@@ -341,7 +341,7 @@ class BytesFileLoader:
 class URLLoader:
     def __init__(self, file_loader=None, expected_file_types=None, verbose=False):
         self.loader = file_loader or BytesFileLoader
-        self.expected_file_types = expected_file_types or ALLOWED_FILE_TYPES
+        self.expected_file_types = ["pdf", "doc", "docx", "ppt", "pptx", "csv"]
         self.verbose = verbose
 
     def load(self, tool_files: List[ToolFile]) -> List[Document]:
@@ -354,11 +354,17 @@ class URLLoader:
         for tool_file in tool_files:
             try:
                 url = tool_file.url
+
+                if url.__contains__("//drive.google"):
+                    logger.info("Using google drive")
+
                 response = requests.get(url)
                 parsed_url = urlparse(url)
                 path = parsed_url.path
 
-                if path.endswith(expected_file_extensions):
+                logger.info("Path is " + path)
+
+                if path.endswith(expected_file_extensions, "/o/"):
                     if response.status_code == 200:
                         # Read file
                         file_content = BytesIO(response.content)
